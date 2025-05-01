@@ -17,7 +17,6 @@ export default async function TaskDetailPage({ params }: { params: { id: string 
   
   const task: Task = result.rows[0];
   
-  // Format the date for display
   const formatDate = (date: Date | null) => {
     if (!date) return 'Not set';
     return new Date(date).toLocaleString();
