@@ -1,20 +1,15 @@
-import { NextResponse } from 'next/server'
-import { executeQuery }  from '@/lib/db'
-import { getServerSession } from 'next-auth/next'
-import { authOptions }     from '../../auth/[...nextauth]/options'
+import { NextRequest, NextResponse } from 'next/server'
+import { executeQuery }            from '@/lib/db'
+import { getServerSession }         from 'next-auth/next'
+import { authOptions }              from '../../auth/[...nextauth]/options'
 
-// Define a proper type for context
-interface RouteContext {
-  params: {
-    id: string;
-  };
+function extractId(req: NextRequest) {
+  const parts = req.nextUrl.pathname.split('/')
+  return parts[parts.length - 1]!
 }
 
-export async function GET(
-  request: Request,
-  context: RouteContext     
-) {
-  const { id } = context.params;
+export async function GET(req: NextRequest) {
+  const id = extractId(req)
 
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
@@ -28,29 +23,27 @@ export async function GET(
   if (result.rows.length === 0) {
     return NextResponse.json({ error: 'Task not found' }, { status: 404 })
   }
+
   return NextResponse.json({ task: result.rows[0] })
 }
 
-export async function PUT(
-  request: Request,
-  context: RouteContext
-) {
-  const { id } = context.params;
+export async function PUT(req: NextRequest) {
+  const id = extractId(req)
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const body = await request.json()
-  const check = await executeQuery(
+  const body = await req.json()
+  const exists = await executeQuery(
     'SELECT 1 FROM tasks WHERE id = $1 AND user_id = $2',
     [id, session.user.id]
   )
-  if (check.rows.length === 0) {
+  if (exists.rows.length === 0) {
     return NextResponse.json({ error: 'Task not found' }, { status: 404 })
   }
 
-  const result = await executeQuery(
+  const updated = await executeQuery(
     `UPDATE tasks
         SET title       = $1,
             description = $2,
@@ -69,25 +62,24 @@ export async function PUT(
       session.user.id,
     ]
   )
-  return NextResponse.json({ task: result.rows[0] })
+  return NextResponse.json({ task: updated.rows[0] })
 }
 
-export async function DELETE(
-  request: Request,
-  context: RouteContext
-) {
-  const { id } = context.params;
+// DELETE /api/tasks/:id
+export async function DELETE(req: NextRequest) {
+  const id = extractId(req)
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  const result = await executeQuery(
+  const deleted = await executeQuery(
     'DELETE FROM tasks WHERE id = $1 AND user_id = $2 RETURNING id',
     [id, session.user.id]
   )
-  if (result.rows.length === 0) {
+  if (deleted.rows.length === 0) {
     return NextResponse.json({ error: 'Task not found' }, { status: 404 })
   }
+
   return NextResponse.json({ success: true })
 }
