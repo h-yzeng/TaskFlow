@@ -3,12 +3,18 @@ import { executeQuery }  from '@/lib/db'
 import { getServerSession } from 'next-auth/next'
 import { authOptions }     from '../../auth/[...nextauth]/options'
 
+// Define a proper type for context
+interface RouteContext {
+  params: {
+    id: string;
+  };
+}
+
 export async function GET(
   request: Request,
-  context: any     
+  context: RouteContext     
 ) {
-
-  const { id } = (context.params as { id: string })
+  const { id } = context.params;
 
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
@@ -27,9 +33,9 @@ export async function GET(
 
 export async function PUT(
   request: Request,
-  context: any
+  context: RouteContext
 ) {
-  const { id } = (context.params as { id: string })
+  const { id } = context.params;
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -68,9 +74,9 @@ export async function PUT(
 
 export async function DELETE(
   request: Request,
-  context: any
+  context: RouteContext
 ) {
-  const { id } = (context.params as { id: string })
+  const { id } = context.params;
   const session = await getServerSession(authOptions)
   if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
