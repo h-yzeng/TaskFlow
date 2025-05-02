@@ -3,7 +3,7 @@ import GithubProvider from "next-auth/providers/github";
 import type { NextAuthOptions } from "next-auth";
 import { executeQuery } from '@/lib/db';
 
-export const authOptions: NextAuthOptions = {
+const authOptions: NextAuthOptions = {
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID || "",
@@ -66,4 +66,9 @@ export const authOptions: NextAuthOptions = {
 };
 
 const handler = NextAuth(authOptions);
+
+export function getAuthOptions() {
+  return authOptions;
+}
+
 export { handler as GET, handler as POST };
