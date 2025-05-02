@@ -1,12 +1,237 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { executeQuery } from '@/lib/db';
-import { Task } from '@/lib/db/schema';
+import TaskCard from '@/components/TaskCard';
+import { Task } from '../types'; 
 
-export const dynamic = 'force-dynamic';
+export default function HomePage() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-export default async function HomePage() {
-  const result = await executeQuery('SELECT * FROM tasks ORDER BY created_at DESC');
-  const tasks: Task[] = result.rows;
+  const fetchTasks = async () => {
+    console.log('Fetching tasks...');
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/tasks');
+      if (!response.ok) {
+        throw new Error('Failed to fetch tasks');
+      }
+      const data = await response.json();
+      
+      if (data.tasks && Array.isArray(data.tasks)) {
+        console.log('Received tasks:', data.tasks);
+        setTasks(data.tasks);
+      } else if (Array.isArray(data)) {
+        console.log('Received tasks array:', data);
+        setTasks(data);
+      } else {
+        console.error('Unexpected API response format:', data);
+        setError('Unexpected data format from API');
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+      setError('Failed to load tasks');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const handleToggleComplete = async (taskId: string, completed: boolean): Promise<void> => {
+    console.log(`Toggling task ${taskId} to ${completed ? 'completed' : 'not completed'}`);
+    
+    try {
+      const taskToUpdate = tasks.find(t => t.id === taskId);
+      if (!taskToUpdate) {
+        console.error(`Task not found with ID: ${taskId}`);
+        throw new Error('Task not found');
+      }
+      
+      console.log(`Found task to update:`, taskToUpdate);
+      
+      let useUnderscores = false;
+      for (const t of tasks) {
+        if (typeof t.status === 'string' && t.status.includes('_')) {
+          useUnderscores = true;
+          break;
+        }
+      }
+      
+      let newStatus: string;
+      if (completed) {
+        newStatus = 'completed';
+      } else {
+        newStatus = useUnderscores ? 'in_progress' : 'in progress';
+      }
+      
+      console.log(`Setting new status to: ${newStatus}`);
+      
+      // Try a direct POST to the "update" endpoint instead of using PUT/PATCH
+      // This avoids potential routing issues with dynamic segments
+      const response = await fetch(`/api/tasks/update`, {
+        method: 'POST', 
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          id: taskId,
+          status: newStatus 
+        }),
+      });
+      
+      console.log(`Response status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        let errorMessage: string;
+        try {
+          const responseBody = await response.text();
+          console.error("Error response body:", responseBody);
+          
+          try {
+            const errorJson = JSON.parse(responseBody);
+            console.error("Parsed error JSON:", errorJson);
+            errorMessage = errorJson.error || `Server error (${response.status})`;
+          } catch {
+            console.error("Error response is not valid JSON");
+            errorMessage = responseBody || `Server error (${response.status})`;
+          }
+        } catch (error) {
+          console.error("Could not read error response", error);
+          errorMessage = `Server error (${response.status})`;
+        }
+        
+        console.error(`Task update failed: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+
+      // Handle successful response
+      const responseBody = await response.text();
+      console.log(`Success response body:`, responseBody);
+      
+      if (responseBody && responseBody.trim()) {
+        try {
+          const responseData = JSON.parse(responseBody);
+          console.log('Parsed server response:', responseData);
+          
+          if (responseData && responseData.task) {
+            console.log('Using server task data:', responseData.task);
+            setTasks(prevTasks => 
+              prevTasks.map(task => 
+                task.id === taskId ? responseData.task : task
+              )
+            );
+            console.log('Task updated with server data');
+            return;
+          } else {
+            console.warn('Server response does not contain task data:', responseData);
+          }
+        } catch {
+          console.error('Failed to parse response as JSON');
+        }
+      } else {
+        console.warn('Server returned empty response body');
+      }
+      
+      // Fallback to client-side update
+      console.log('Using client-side update as fallback');
+      setTasks(prevTasks => {
+        return prevTasks.map(task => {
+          if (task.id === taskId) {
+            console.log(`Updating task ${taskId} client-side`);
+            return {
+              ...task,
+              status: newStatus as Task['status'] 
+            };
+          }
+          return task;
+        });
+      });
+      
+      console.log('Task updated successfully (client-side)');
+    } catch (error) {
+      console.error('Error in handleToggleComplete:', error);
+      alert(`Failed to update task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      fetchTasks();
+    }
+  };
+
+  // New handler for deleting tasks
+  const handleDeleteTask = async (taskId: string): Promise<void> => {
+    console.log(`Deleting task ${taskId}`);
+    
+    try {
+      const response = await fetch(`/api/tasks/update`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id: taskId }),
+      });
+      
+      console.log(`Delete response status: ${response.status} ${response.statusText}`);
+      
+      if (!response.ok) {
+        let errorMessage: string;
+        try {
+          const responseBody = await response.text();
+          console.error("Delete error response body:", responseBody);
+          
+          try {
+            const errorJson = JSON.parse(responseBody);
+            console.error("Parsed delete error JSON:", errorJson);
+            errorMessage = errorJson.error || `Server error (${response.status})`;
+          } catch {
+            console.error("Delete error response is not valid JSON");
+            errorMessage = responseBody || `Server error (${response.status})`;
+          }
+        } catch (error) {
+          console.error("Could not read delete error response", error);
+          errorMessage = `Server error (${response.status})`;
+        }
+        
+        console.error(`Task deletion failed: ${errorMessage}`);
+        throw new Error(errorMessage);
+      }
+      
+      // If deletion was successful, update the local state
+      setTasks(prevTasks => prevTasks.filter(task => task.id !== taskId));
+      console.log(`Task ${taskId} deleted successfully`);
+      
+    } catch (error) {
+      console.error('Error in handleDeleteTask:', error);
+      alert(`Failed to delete task: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      // Refresh the tasks list in case of error
+      fetchTasks();
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center py-20">
+        <div className="animate-spin h-10 w-10 border-4 border-blue-500 rounded-full border-t-transparent"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <p>{error}</p>
+        <button 
+          onClick={() => fetchTasks()}
+          className="mt-2 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">
@@ -58,71 +283,12 @@ export default async function HomePage() {
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {tasks.map((task) => (
-            <Link
+            <TaskCard
               key={task.id}
-              href={`/tasks/${task.id}`}
-              className="group block bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 hover:translate-y-[-2px] transition-all duration-200"
-            >
-              <div className="p-5">
-                <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate pr-2">
-                    {task.title}
-                  </h3>
-                  <span className={`flex-shrink-0 text-xs font-medium px-2.5 py-1 rounded-full ${
-                    task.priority === 'high' 
-                      ? 'bg-red-50 text-red-700 border border-red-200' 
-                      : task.priority === 'medium'
-                      ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                      : 'bg-green-50 text-green-700 border border-green-200'
-                  }`}>
-                    {task.priority === 'high' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="inline h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
-                      </svg>
-                    )}
-                    {task.priority}
-                  </span>
-                </div>
-                
-                <p className="text-sm text-gray-600 mb-4 line-clamp-2 min-h-[40px]">
-                  {task.description || 'No description provided.'}
-                </p>
-                
-                <div className="flex justify-between items-center pt-3 border-t border-gray-100">
-                  <span className={`flex items-center text-xs font-medium px-2.5 py-1 rounded-full ${
-                    task.status === 'completed' 
-                      ? 'bg-green-50 text-green-700 border border-green-200' 
-                      : task.status === 'in_progress'
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'bg-gray-50 text-gray-700 border border-gray-200'
-                  }`}>
-                    {task.status === 'completed' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="inline h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                      </svg>
-                    )}
-                    {task.status === 'in_progress' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="inline h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
-                      </svg>
-                    )}
-                    {task.status === 'pending' && (
-                      <svg xmlns="http://www.w3.org/2000/svg" className="inline h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    )}
-                    {task.status.replace('_', ' ')}
-                  </span>
-                  
-                  <span className="inline-flex items-center text-sm font-medium text-blue-600 group-hover:text-blue-800 transition-colors">
-                    View Details
-                    <svg xmlns="http://www.w3.org/2000/svg" className="ml-1 h-4 w-4 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-            </Link>
+              task={task}
+              onToggleComplete={handleToggleComplete}
+              onDelete={handleDeleteTask}
+            />
           ))}
         </div>
       )}
