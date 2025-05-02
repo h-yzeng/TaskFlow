@@ -2,6 +2,7 @@ import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { initializeDatabase } from '@/lib/db';
+import SessionProvider from '@/components/SessionProvider';
 import AppLayout from './AppLayout';
 
 initializeDatabase().catch(console.error);
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AppLayout>{children}</AppLayout>
+        <SessionProvider>
+          <AppLayout>{children}</AppLayout>
+        </SessionProvider>
       </body>
     </html>
   );

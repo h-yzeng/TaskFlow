@@ -32,7 +32,7 @@ export default function TaskDetailComponent({ task }: TaskDetailComponentProps) 
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6">
-      {/* Back navigation with improved styling */}
+      {/* Back navigation */}
       <Link 
         href="/" 
         className="inline-flex items-center mb-8 px-4 py-2 bg-white shadow-sm border border-gray-200 rounded-lg text-blue-600 hover:text-blue-800 hover:bg-blue-50 transition-colors"
@@ -43,9 +43,9 @@ export default function TaskDetailComponent({ task }: TaskDetailComponentProps) 
         <span>Back to tasks</span>
       </Link>
       
-      {/* Card container with enhanced shadow and rounded corners */}
+      {/* Card container */}
       <div className="bg-white shadow-lg rounded-xl overflow-hidden border border-gray-200">
-        {/* Header with improved gradient background */}
+        {/* Header */}
         <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-6 text-white">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
             <h1 className="text-2xl font-bold">{task.title}</h1>
@@ -64,7 +64,7 @@ export default function TaskDetailComponent({ task }: TaskDetailComponentProps) 
           </div>
         </div>
         
-        {/* Status and priority badges - moved to a more prominent position */}
+        {/* Status and priority badges */}
         <div className="flex flex-wrap gap-3 px-8 py-4 bg-gray-50 border-b border-gray-200">
           <span className={`inline-flex items-center px-3 py-1.5 rounded-full text-sm font-medium border ${getStatusStyle(task.status)}`}>
             <span className={`w-2 h-2 rounded-full mr-2 ${task.status === "completed" ? "bg-green-500" : task.status === "in_progress" ? "bg-blue-500" : "bg-gray-500"}`}></span>
@@ -165,7 +165,7 @@ export default function TaskDetailComponent({ task }: TaskDetailComponentProps) 
           </div>
         </div>
         
-        {/* Footer with actions */}
+        {/* Footer */}
         <div className="px-8 py-5 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
           <Link
             href="/"

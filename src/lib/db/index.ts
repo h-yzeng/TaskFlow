@@ -25,6 +25,34 @@ export async function initializeDatabase() {
       )
     `;
 
+    await sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255),
+        email VARCHAR(255) UNIQUE,
+        image VARCHAR(255),
+        github_id VARCHAR(255) UNIQUE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    await sql`
+      DO $$ 
+      BEGIN 
+        IF NOT EXISTS (
+          SELECT FROM information_schema.columns 
+          WHERE table_name = 'tasks' AND column_name = 'user_id'
+        ) THEN
+          ALTER TABLE tasks ADD COLUMN user_id INTEGER REFERENCES users(id);
+        END IF;
+      END $$;
+    `;
+
+    await sql`
+      CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
+    `;
+
     console.log('Database initialized');
   } catch (error) {
     console.error('Failed to initialize database:', error);
