@@ -1,11 +1,24 @@
-# Task Manager v2.0
+<div align="center">
 
-A modern, full-stack task management application built with the latest web technologies. Organize, track, and manage your tasks with a beautiful, responsive UI.
+# ✅ TaskFlow
 
-![Next.js](https://img.shields.io/badge/Next.js-15.1-black)
-![React](https://img.shields.io/badge/React-19-blue)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-06B6D4)
+### *A Modern Task Management Application*
+
+A beautiful, full-stack task management application built with cutting-edge web technologies. Stay organized, boost productivity, and manage your tasks with an intuitive, responsive interface.
+
+[![Next.js](https://img.shields.io/badge/Next.js-15.1.0-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.0-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Vercel](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+
+[Live Demo](https://taskflow-manager-app.vercel.app/) • [Report Bug](https://github.com/h-yzeng/TaskFlow/issues) • [Request Feature](https://github.com/h-yzeng/TaskFlow/issues)
+
+</div>
+
+---
 
 ## ✨ Features
 
@@ -45,24 +58,28 @@ A modern, full-stack task management application built with the latest web techn
 ### Installation
 
 1. **Clone the repository**
+
    ```bash
-   git clone https://github.com/h-yzeng/task-manager.git
-   cd task-manager
+   git clone https://github.com/h-yzeng/TaskFlow.git
+   cd TaskFlow
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Set up environment variables**
-   
+
    Copy the example environment file:
+
    ```bash
-   cp .env.example .env.local
+   cp .env.example .env
    ```
-   
-   Fill in your environment variables in `.env.local`:
+
+   Fill in your environment variables in `.env`:
+
    ```env
    # Database (Neon PostgreSQL)
    DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
@@ -77,13 +94,15 @@ A modern, full-stack task management application built with the latest web techn
    ```
 
 4. **Set up the database**
-   
+
    Push the database schema to Neon:
+
    ```bash
-   npx drizzle-kit push
+   npm run db:push
    ```
 
 5. **Run the development server**
+
    ```bash
    npm run dev
    ```
@@ -95,15 +114,15 @@ A modern, full-stack task management application built with the latest web techn
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Click "New OAuth App"
 3. Fill in the details:
-   - **Application name**: Task Manager
+   - **Application name**: TaskFlow
    - **Homepage URL**: `http://localhost:3000`
    - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
 4. Copy the Client ID and generate a Client Secret
-5. Add them to your `.env.local` file
+5. Add them to your `.env` file
 
 ## 📁 Project Structure
 
-```
+```plaintext
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API Routes

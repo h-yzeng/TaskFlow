@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
-import { tasks, categories } from "@/lib/db/schema";
+import { tasks } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import TaskDetailClient from "./task-detail-client";
 import type { Metadata } from "next";
