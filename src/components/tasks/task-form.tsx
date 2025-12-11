@@ -178,19 +178,55 @@ export function TaskForm({
         )}
       </div>
 
-      {/* Due Date */}
+      {/* Due Date & Time */}
       <div className="space-y-2">
-        <Label>Due Date</Label>
-        <Input
-          type="datetime-local"
-          value={formData.dueDate ? formData.dueDate.slice(0, 16) : ""}
-          onChange={(e) =>
-            setFormData({
-              ...formData,
-              dueDate: e.target.value ? new Date(e.target.value).toISOString() : null,
-            })
-          }
-        />
+        <Label>Due Date & Time</Label>
+        <div className="grid grid-cols-2 gap-3">
+          <Input
+            type="date"
+            value={
+              formData.dueDate
+                ? new Date(formData.dueDate).toLocaleDateString("en-CA")
+                : ""
+            }
+            onChange={(e) => {
+              if (e.target.value) {
+                const existingTime = formData.dueDate
+                  ? new Date(formData.dueDate).toTimeString().slice(0, 5)
+                  : "12:00";
+                const newDateTime = `${e.target.value}T${existingTime}`;
+                setFormData({
+                  ...formData,
+                  dueDate: new Date(newDateTime).toISOString(),
+                });
+              } else {
+                setFormData({ ...formData, dueDate: null });
+              }
+            }}
+            placeholder="Select date"
+          />
+          <Input
+            type="time"
+            value={
+              formData.dueDate
+                ? new Date(formData.dueDate).toTimeString().slice(0, 5)
+                : ""
+            }
+            onChange={(e) => {
+              if (e.target.value && formData.dueDate) {
+                const existingDate = new Date(formData.dueDate)
+                  .toLocaleDateString("en-CA");
+                const newDateTime = `${existingDate}T${e.target.value}`;
+                setFormData({
+                  ...formData,
+                  dueDate: new Date(newDateTime).toISOString(),
+                });
+              }
+            }}
+            placeholder="Select time"
+            disabled={!formData.dueDate}
+          />
+        </div>
       </div>
 
       {/* Actions */}
