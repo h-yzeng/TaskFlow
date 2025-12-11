@@ -1,65 +1,200 @@
-# Task Manager
+# Task Manager v2.0
 
-A lightweight, full-stack task management app deployed on Vercel. Task Manager lets you quickly organize, track, and update your to-do items from any device.
+A modern, full-stack task management application built with the latest web technologies. Organize, track, and manage your tasks with a beautiful, responsive UI.
 
-## Live Demo
+![Next.js](https://img.shields.io/badge/Next.js-15.1-black)
+![React](https://img.shields.io/badge/React-19-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.0-06B6D4)
 
-[https://h-yzeng-task-manager.vercel.app](https://h-yzeng-task-manager.vercel.app)
+## ✨ Features
 
----
+- **🎨 Modern UI** - Beautiful, responsive design with dark mode support
+- **🔐 Authentication** - Secure GitHub OAuth authentication
+- **📊 Task Dashboard** - Overview with stats, filters, and search
+- **📝 Full CRUD** - Create, read, update, and delete tasks
+- **🏷️ Categories & Labels** - Organize tasks with categories and labels
+- **⚡ Real-time Updates** - Optimistic UI updates with Framer Motion animations
+- **📱 Mobile Friendly** - Fully responsive design for all devices
+- **🌓 Dark Mode** - System-aware theme with manual toggle
 
-## How It Works
+## 🛠️ Tech Stack
 
-1. **Homepage (Task List)**  
-   - When you visit `/`, the server fetches all tasks from Vercel Postgres and renders them in a responsive grid.  
-   - Each task card shows its **title**, **priority** (low/medium/high) and **status** (pending/in progress/completed), plus links to **View Details**, **Edit**, or **Delete**.
+| Category | Technology |
+|----------|------------|
+| **Framework** | Next.js 15.1 (App Router, Turbopack) |
+| **Frontend** | React 19, TypeScript 5 |
+| **Styling** | Tailwind CSS 4, CSS Variables |
+| **Components** | Radix UI (shadcn-style components) |
+| **Animation** | Framer Motion 11 |
+| **Database** | Neon PostgreSQL (Serverless) |
+| **ORM** | Drizzle ORM |
+| **Authentication** | NextAuth.js v5 (Auth.js) |
+| **Icons** | Lucide React |
+| **Deployment** | Vercel |
 
-2. **Create New Task**  
-   - Click **“Add New Task”** to go to `/tasks/new`.  
-   - Fill in the **title**, **description**, **priority**, and **due date**, then submit.  
-   - The form makes a `POST /api/tasks` request; the server inserts a new row and you’re redirected back to the updated task list.
+## 🚀 Getting Started
 
-3. **Task Details**  
-   - Click **“View Details”** on any card to open `/tasks/[id]`.  
-   - The page server-fetches that task by its ID (`GET /api/tasks/:id`) and displays all fields, including creation and last-updated timestamps.  
-   - From here you can jump to **Edit** or hit the **Delete** button to remove it (`DELETE /api/tasks/:id`).
+### Prerequisites
 
-4. **Edit Task**  
-   - On `/tasks/[id]/edit`, a client-side React form is prefilled by fetching `GET /api/tasks/:id`.  
-   - Change any field (title, description, status, priority, due date) and submit.  
-   - The page issues a `PUT /api/tasks/:id`, then returns you to the updated details view.
+- Node.js 18.x or higher
+- npm or pnpm
+- A [Neon](https://neon.tech) PostgreSQL database
+- A [GitHub OAuth App](https://github.com/settings/developers)
 
-5. **Delete Task**  
-   - The **Delete** button on the detail page sends `DELETE /api/tasks/:id` and, on success, navigates back to the task list.
+### Installation
 
----
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/h-yzeng/task-manager.git
+   cd task-manager
+   ```
 
-## Architecture & Tech
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-- **Next.js v15 App Router**  
-  - Server components fetch data via Route Handlers.  
-  - Client components (`"use client"`) handle forms and navigation.
+3. **Set up environment variables**
+   
+   Copy the example environment file:
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Fill in your environment variables in `.env.local`:
+   ```env
+   # Database (Neon PostgreSQL)
+   DATABASE_URL="postgresql://user:password@host/database?sslmode=require"
 
-- **TypeScript**  
-  - End-to-end type safety: from API routes to React props and SQL results.
+   # NextAuth.js
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key-here"
 
-- **Tailwind CSS**  
-  - Utility-first styling for responsive, mobile-friendly UI.
+   # GitHub OAuth
+   GITHUB_ID="your-github-client-id"
+   GITHUB_SECRET="your-github-client-secret"
+   ```
 
-- **Database: Vercel Postgres (Neon)**  
-  - Serverless Postgres instance for persistent task storage.  
-  - Accessed via a simple `executeQuery` wrapper in `src/lib/db`.
+4. **Set up the database**
+   
+   Push the database schema to Neon:
+   ```bash
+   npx drizzle-kit push
+   ```
 
-- **Deployment**  
-  - Hosted on Vercel with automatic CI/CD.  
-  - Every push to `main` rebuilds both the frontend and the database schema.
+5. **Run the development server**
+   ```bash
+   npm run dev
+   ```
 
----
+6. **Open** [http://localhost:3000](http://localhost:3000) in your browser
 
-## Getting Started (User Guide)
+### GitHub OAuth Setup
 
-1. **Open** the live site at [h-yzeng-task-manager.vercel.app](https://h-yzeng-task-manager.vercel.app).  
-2. **View** your existing tasks or click **“Add New Task”**.  
-3. **Fill out** the new-task form (Title is required; other fields are optional).  
-4. **Submit** to see your task immediately added to the list.  
-5. **Click** on any task card to view details, edit fields, or delete it.
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click "New OAuth App"
+3. Fill in the details:
+   - **Application name**: Task Manager
+   - **Homepage URL**: `http://localhost:3000`
+   - **Authorization callback URL**: `http://localhost:3000/api/auth/callback/github`
+4. Copy the Client ID and generate a Client Secret
+5. Add them to your `.env.local` file
+
+## 📁 Project Structure
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   │   ├── auth/          # Authentication endpoints
+│   │   └── tasks/         # Task CRUD endpoints
+│   ├── auth/              # Auth pages (signin)
+│   ├── tasks/             # Task pages
+│   │   ├── [id]/          # Task detail & edit
+│   │   └── new/           # New task form
+│   ├── layout.tsx         # Root layout
+│   └── page.tsx           # Home page
+├── components/
+│   ├── layout/            # Layout components (header)
+│   ├── providers/         # Context providers
+│   ├── tasks/             # Task components
+│   └── ui/                # shadcn-style UI components
+├── lib/
+│   ├── db/               # Database (Drizzle + Neon)
+│   │   ├── index.ts      # Database connection
+│   │   └── schema.ts     # Database schema
+│   ├── auth.ts           # NextAuth configuration
+│   └── utils.ts          # Utility functions
+└── types.ts              # TypeScript types
+```
+
+## 🗄️ Database Schema
+
+```typescript
+// Users - Authenticated users via GitHub
+users: { id, name, email, image, githubId, createdAt, updatedAt }
+
+// Tasks - Main task items
+tasks: { id, title, description, priority, completed, dueDate, 
+         completedAt, categoryId, position, userId, createdAt, updatedAt }
+
+// Categories - Task organization
+categories: { id, name, color, icon, userId, createdAt, updatedAt }
+
+// Labels - Tags for tasks (many-to-many)
+labels: { id, name, color, userId, createdAt }
+taskLabels: { taskId, labelId }
+```
+
+## 🎨 UI Components
+
+The app uses a custom component library inspired by shadcn/ui:
+
+- **Button** - Multiple variants (default, outline, ghost, etc.)
+- **Card** - Content containers with header/footer
+- **Dialog** - Modal dialogs
+- **Dropdown Menu** - Context menus
+- **Input/Textarea** - Form inputs
+- **Select** - Dropdown selects
+- **Checkbox** - Toggle checkboxes
+- **Badge** - Status/priority badges
+- **Tooltip** - Hover tooltips
+- **Skeleton** - Loading placeholders
+
+## 📝 API Routes
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/tasks` | Get all tasks |
+| POST | `/api/tasks` | Create a task |
+| GET | `/api/tasks/[id]` | Get single task |
+| PUT | `/api/tasks/[id]` | Update a task |
+| DELETE | `/api/tasks/[id]` | Delete a task |
+| PUT | `/api/tasks/update` | Batch update tasks |
+| GET | `/api/tasks/stats` | Get task statistics |
+
+## 🌐 Deployment
+
+The app is deployed on Vercel with automatic CI/CD. Every push to `main` triggers a new deployment.
+
+### Deploy to Vercel
+
+1. Push your code to GitHub
+2. Import the project in [Vercel](https://vercel.com)
+3. Add environment variables in Vercel dashboard
+4. Deploy!
+
+## 📄 License
+
+MIT License - feel free to use this project for learning or as a base for your own applications.
+
+## 🙏 Acknowledgments
+
+- [Next.js](https://nextjs.org/) - The React Framework
+- [Radix UI](https://radix-ui.com/) - Headless UI components
+- [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS
+- [Drizzle ORM](https://orm.drizzle.team/) - TypeScript ORM
+- [Neon](https://neon.tech/) - Serverless Postgres
+- [Auth.js](https://authjs.dev/) - Authentication
+- [Framer Motion](https://www.framer.com/motion/) - Animations

@@ -1,1 +1,179 @@
 @import "tailwindcss";
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+:root {
+  --background: oklch(0.99 0 0);
+  --foreground: oklch(0.14 0.004 285.82);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.14 0.004 285.82);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.14 0.004 285.82);
+  --primary: oklch(0.55 0.22 262.88);
+  --primary-foreground: oklch(0.98 0.005 285.82);
+  --secondary: oklch(0.97 0.001 285.82);
+  --secondary-foreground: oklch(0.21 0.006 285.82);
+  --muted: oklch(0.97 0.001 285.82);
+  --muted-foreground: oklch(0.55 0.014 285.82);
+  --accent: oklch(0.97 0.001 285.82);
+  --accent-foreground: oklch(0.21 0.006 285.82);
+  --destructive: oklch(0.57 0.22 27.33);
+  --destructive-foreground: oklch(0.98 0.005 285.82);
+  --border: oklch(0.92 0.004 285.82);
+  --input: oklch(0.92 0.004 285.82);
+  --ring: oklch(0.55 0.22 262.88);
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: oklch(0.14 0.004 285.82);
+  --foreground: oklch(0.98 0.005 285.82);
+  --card: oklch(0.18 0.005 285.82);
+  --card-foreground: oklch(0.98 0.005 285.82);
+  --popover: oklch(0.18 0.005 285.82);
+  --popover-foreground: oklch(0.98 0.005 285.82);
+  --primary: oklch(0.65 0.22 262.88);
+  --primary-foreground: oklch(0.14 0.004 285.82);
+  --secondary: oklch(0.24 0.006 285.82);
+  --secondary-foreground: oklch(0.98 0.005 285.82);
+  --muted: oklch(0.24 0.006 285.82);
+  --muted-foreground: oklch(0.71 0.01 285.82);
+  --accent: oklch(0.24 0.006 285.82);
+  --accent-foreground: oklch(0.98 0.005 285.82);
+  --destructive: oklch(0.65 0.22 27.33);
+  --destructive-foreground: oklch(0.98 0.005 285.82);
+  --border: oklch(0.28 0.006 285.82);
+  --input: oklch(0.28 0.006 285.82);
+  --ring: oklch(0.65 0.22 262.88);
+}
+
+* {
+  @apply border-border;
+}
+
+body {
+  @apply bg-background text-foreground antialiased;
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-border rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-muted-foreground/30;
+}
+
+/* Focus visible styles */
+:focus-visible {
+  @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    transform: translateY(10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-10px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Task card hover effect */
+.task-card {
+  @apply transition-all duration-200;
+}
+
+.task-card:hover {
+  @apply shadow-lg -translate-y-0.5;
+}
+
+/* Priority colors */
+.priority-urgent {
+  @apply bg-red-500;
+}
+
+.priority-high {
+  @apply bg-orange-500;
+}
+
+.priority-medium {
+  @apply bg-yellow-500;
+}
+
+.priority-low {
+  @apply bg-green-500;
+}

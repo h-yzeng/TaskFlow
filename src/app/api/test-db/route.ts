@@ -1,18 +1,23 @@
-import { NextResponse } from 'next/server';
-import { sql } from '@vercel/postgres';
+import { NextResponse } from "next/server";
+import { db, schema } from "@/lib/db";
+import { sql } from "drizzle-orm";
 
 export async function GET() {
   try {
-    const result = await sql`SELECT NOW()`;
-    return NextResponse.json({ 
-      message: 'Database connection successful',
-      timestamp: result.rows[0].now 
+    // Test database connection using Drizzle
+    const result = await db.execute(sql`SELECT NOW() as now`);
+    return NextResponse.json({
+      message: "Database connection successful",
+      timestamp: result.rows[0]?.now,
     });
   } catch (error) {
-    console.error('Database connection error:', error);
-    return NextResponse.json({ 
-      error: 'Failed to connect to database',
-      details: error instanceof Error ? error.message : String(error)
-    }, { status: 500 });
+    console.error("Database connection error:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to connect to database",
+        details: error instanceof Error ? error.message : String(error),
+      },
+      { status: 500 }
+    );
   }
 }

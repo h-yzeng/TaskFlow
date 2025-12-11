@@ -1,61 +1,28 @@
-import { sql } from '@vercel/postgres';
+import { neon, NeonQueryFunction } from "@neondatabase/serverless";
+import { drizzle, NeonHttpDatabase } from "drizzle-orm/neon-http";
+import * as schema from "./schema";
 
-export async function executeQuery(query: string, values: unknown[] = []) {
-  try {
-    const result = await sql.query(query, values);
-    return result;
-  } catch (error) {
-    console.error('Database query error:', error);
-    throw error;
+// Create a lazy-loaded database connection
+let _db: NeonHttpDatabase<typeof schema> | null = null;
+
+function createDbConnection(): NeonHttpDatabase<typeof schema> {
+  if (!process.env.DATABASE_URL) {
+    throw new Error(
+      "DATABASE_URL environment variable is not set. Please create a .env.local file with your Neon database URL. See .env.example for reference."
+    );
   }
+  const sql = neon(process.env.DATABASE_URL);
+  return drizzle(sql, { schema });
 }
 
-export async function initializeDatabase() {
-  try {
-    await sql`
-      CREATE TABLE IF NOT EXISTS tasks (
-        id SERIAL PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        description TEXT,
-        status VARCHAR(50) DEFAULT 'pending',
-        priority VARCHAR(50) DEFAULT 'medium',
-        due_date TIMESTAMP,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
+// Export a getter that creates the connection lazily
+export const db = new Proxy({} as NeonHttpDatabase<typeof schema>, {
+  get(target, prop) {
+    if (!_db) {
+      _db = createDbConnection();
+    }
+    return (_db as any)[prop];
+  },
+});
 
-    await sql`
-      CREATE TABLE IF NOT EXISTS users (
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(255),
-        email VARCHAR(255) UNIQUE,
-        image VARCHAR(255),
-        github_id VARCHAR(255) UNIQUE,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `;
-
-    await sql`
-      DO $$ 
-      BEGIN 
-        IF NOT EXISTS (
-          SELECT FROM information_schema.columns 
-          WHERE table_name = 'tasks' AND column_name = 'user_id'
-        ) THEN
-          ALTER TABLE tasks ADD COLUMN user_id INTEGER REFERENCES users(id);
-        END IF;
-      END $$;
-    `;
-
-    await sql`
-      CREATE INDEX IF NOT EXISTS idx_tasks_user_id ON tasks(user_id);
-    `;
-
-    console.log('Database initialized');
-  } catch (error) {
-    console.error('Failed to initialize database:', error);
-    throw error;
-  }
-}
+export { schema };
