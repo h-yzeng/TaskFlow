@@ -61,7 +61,7 @@ export default function EditTaskPage() {
 
         if (categoriesRes.ok) {
           const data = await categoriesRes.json();
-          setCategories(data);
+          setCategories(data.categories || []);
         }
       } catch (err) {
         setError(`An error occurred: ${err instanceof Error ? err.message : String(err)}`);
