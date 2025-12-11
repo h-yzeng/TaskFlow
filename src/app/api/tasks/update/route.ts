@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db, schema } from "@/lib/db";
 import { auth } from "@/lib/auth";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 
 // Batch update multiple tasks (e.g., for reordering or bulk status changes)
 export async function PUT(request: NextRequest) {
